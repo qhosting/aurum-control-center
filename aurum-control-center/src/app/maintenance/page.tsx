@@ -1,0 +1,315 @@
+'use client'
+
+import { useState } from 'react'
+import { 
+  Terminal, 
+  RefreshCw, 
+  Shield, 
+  Trash2, 
+  Server, 
+  Copy,
+  CheckCircle
+} from 'lucide-react'
+import { config } from '@/config/config'
+
+interface TerminalOutput {
+  id: string
+  command: string
+  output: string
+  timestamp: string
+  status: 'running' | 'success' | 'error'
+}
+
+interface MaintenanceTask {
+  id: string
+  name: string
+  description: string
+  command: string
+  icon: any
+  category: 'license' | 'maintenance' | 'service'
+}
+
+// Componente Terminal para mostrar la salida
+function Terminal({ outputs }: { outputs: TerminalOutput[] }) {
+  const [copied, setCopied] = useState<string | null>(null)
+
+  const copyToClipboard = async (text: string, id: string) => {
+    await navigator.clipboard.writeText(text)
+    setCopied(id)
+    setTimeout(() => setCopied(null), 2000)
+  }
+
+  return (
+    <div className="terminal max-h-96 overflow-y-auto">
+      {outputs.map((output) => (
+        <div key={output.id} className="mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center space-x-2">
+              <span className="text-green-400">$</span>
+              <span className="text-white">{output.command}</span>
+              <div className={`
+                w-2 h-2 rounded-full animate-pulse
+                ${output.status === 'running' ? 'bg-yellow-400' : 
+                  output.status === 'success' ? 'bg-green-400' : 'bg-red-400'}
+              `} />
+            </div>
+            <button
+              onClick={() => copyToClipboard(output.output, output.id)}
+              className="text-green-400 hover:text-green-300 transition-colors"
+              title="Copiar salida"
+            >
+              {copied === output.id ? (
+                <CheckCircle className="w-4 h-4" />
+              ) : (
+                <Copy className="w-4 h-4" />
+              )}
+            </button>
+          </div>
+          <div className="text-green-300 font-mono text-sm whitespace-pre-wrap">
+            {output.output}
+          </div>
+          <div className="text-green-600 text-xs mt-1">
+            {output.timestamp}
+          </div>
+        </div>
+      ))}
+      {outputs.length === 0 && (
+        <div className="text-green-600">
+          Terminal listo. Selecciona una tarea para ejecutar...
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Componente para botón de tarea de mantenimiento
+function MaintenanceButton({ task, onExecute }: { 
+  task: MaintenanceTask, 
+  onExecute: (task: MaintenanceTask) => void 
+}) {
+  return (
+    <button
+      onClick={() => onExecute(task)}
+      className="glass-card p-6 hover:scale-105 transition-all duration-300 group text-left"
+    >
+      <div className="flex items-center space-x-4">
+        <div className="w-12 h-12 bg-cyber-gold/10 rounded-lg flex items-center justify-center group-hover:bg-cyber-gold/20 transition-colors">
+          <task.icon className="w-6 h-6 text-cyber-gold" />
+        </div>
+        <div className="flex-1">
+          <h3 className="text-lg font-semibold text-white mb-1">{task.name}</h3>
+          <p className="text-sm text-gray-400">{task.description}</p>
+        </div>
+      </div>
+    </button>
+  )
+}
+
+const maintenanceTasks: MaintenanceTask[] = [
+  {
+    id: 'cpanel-license',
+    name: 'Actualizar Licencia cPanel',
+    description: 'Actualiza la licencia de cPanel en todos los servidores',
+    command: '/usr/local/cpanel/cpkeyclt',
+    icon: Shield,
+    category: 'license'
+  },
+  {
+    id: 'cloudlinux-license',
+    name: 'Actualizar Licencia CloudLinux',
+    description: 'Renueva la licencia de CloudLinux OS',
+    command: '/usr/bin/cldetect --update-license',
+    icon: Shield,
+    category: 'license'
+  },
+  {
+    id: 'clean-temp',
+    name: 'Limpiar Temporales',
+    description: 'Elimina archivos temporales y cache del sistema',
+    command: 'find /tmp -type f -mtime +7 -delete && find /var/tmp -type f -mtime +7 -delete',
+    icon: Trash2,
+    category: 'maintenance'
+  },
+  {
+    id: 'restart-web',
+    name: 'Reiniciar Servicios Web',
+    description: 'Reinicia Apache/Nginx y servicios relacionados',
+    command: 'systemctl restart apache2 nginx && systemctl restart php8.1-fpm',
+    icon: RefreshCw,
+    category: 'service'
+  }
+]
+
+export default function ServerMaintenance() {
+  const [terminalOutputs, setTerminalOutputs] = useState<TerminalOutput[]>([])
+  const [isExecuting, setIsExecuting] = useState(false)
+
+  const executeTask = async (task: MaintenanceTask) => {
+    setIsExecuting(true)
+    
+    const newOutput: TerminalOutput = {
+      id: Date.now().toString(),
+      command: task.command,
+      output: '',
+      timestamp: new Date().toLocaleTimeString('es-ES'),
+      status: 'running'
+    }
+    
+    setTerminalOutputs(prev => [...prev, newOutput])
+    
+    try {
+      // Simular llamada al webhook de n8n
+      const response = await fetch(config.webhooks.serverMaintenance, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: task.id,
+          command: task.command,
+          timestamp: new Date().toISOString()
+        })
+      })
+      
+      // Simular respuesta del webhook
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      
+      const mockOutput = `Ejecutando: ${task.command}
+Resultado: ✓ Comando ejecutado exitosamente
+Tiempo de ejecución: 1.23s
+Servidores procesados: 3/3
+Estado: Completado sin errores
+
+Detalles:
+- Servidor 1: OK
+- Servidor 2: OK  
+- Servidor 3: OK`
+      
+      setTerminalOutputs(prev => prev.map(output => 
+        output.id === newOutput.id 
+          ? { ...output, output: mockOutput, status: 'success' as const }
+          : output
+      ))
+      
+    } catch (error) {
+      const errorOutput = `Error ejecutando: ${task.command}
+Error: Fallo en la conexión con el servidor de mantenimiento
+Código: 500 - Internal Server Error`
+      
+      setTerminalOutputs(prev => prev.map(output => 
+        output.id === newOutput.id 
+          ? { ...output, output: errorOutput, status: 'error' as const }
+          : output
+      ))
+    } finally {
+      setIsExecuting(false)
+    }
+  }
+
+  const clearTerminal = () => {
+    setTerminalOutputs([])
+  }
+
+  const tasksByCategory = {
+    license: maintenanceTasks.filter(t => t.category === 'license'),
+    maintenance: maintenanceTasks.filter(t => t.category === 'maintenance'),
+    service: maintenanceTasks.filter(t => t.category === 'service')
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-tech font-bold text-cyber-gold">
+            Server Maintenance
+          </h1>
+          <p className="text-gray-400 mt-1">
+            Panel de control para tareas administrativas y mantenimiento
+          </p>
+        </div>
+        <div className="flex space-x-3">
+          <button
+            onClick={clearTerminal}
+            className="flex items-center space-x-2 px-4 py-2 bg-cyber-gray-700 hover:bg-cyber-gray-600 text-white rounded-lg transition-colors"
+            disabled={isExecuting}
+          >
+            <Terminal className="w-4 h-4" />
+            <span>Limpiar Terminal</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Tasks by Category */}
+      <div className="space-y-8">
+        {/* License Tasks */}
+        <div>
+          <h2 className="text-xl font-semibold text-cyber-cyan mb-4 flex items-center space-x-2">
+            <Shield className="w-5 h-5" />
+            <span>Licencias</span>
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {tasksByCategory.license.map((task) => (
+              <MaintenanceButton
+                key={task.id}
+                task={task}
+                onExecute={executeTask}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Maintenance Tasks */}
+        <div>
+          <h2 className="text-xl font-semibold text-cyber-cyan mb-4 flex items-center space-x-2">
+            <Trash2 className="w-5 h-5" />
+            <span>Mantenimiento</span>
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {tasksByCategory.maintenance.map((task) => (
+              <MaintenanceButton
+                key={task.id}
+                task={task}
+                onExecute={executeTask}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Service Tasks */}
+        <div>
+          <h2 className="text-xl font-semibold text-cyber-cyan mb-4 flex items-center space-x-2">
+            <Server className="w-5 h-5" />
+            <span>Servicios</span>
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {tasksByCategory.service.map((task) => (
+              <MaintenanceButton
+                key={task.id}
+                task={task}
+                onExecute={executeTask}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Terminal Output */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-cyber-cyan flex items-center space-x-2">
+            <Terminal className="w-5 h-5" />
+            <span>Terminal Output</span>
+          </h2>
+          {isExecuting && (
+            <div className="flex items-center space-x-2 text-yellow-400">
+              <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
+              <span className="text-sm">Ejecutando...</span>
+            </div>
+          )}
+        </div>
+        <Terminal outputs={terminalOutputs} />
+      </div>
+    </div>
+  )
+}
