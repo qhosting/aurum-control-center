@@ -106,36 +106,161 @@ function MaintenanceButton({ task, onExecute }: {
 }
 
 const maintenanceTasks: MaintenanceTask[] = [
+  // Licencias QHosting
   {
     id: 'cpanel-license',
     name: 'Actualizar Licencia cPanel',
-    description: 'Actualiza la licencia de cPanel en todos los servidores',
-    command: '/usr/local/cpanel/cpkeyclt',
+    description: 'Actualiza la licencia de cPanel vía mirror QHosting',
+    command: config.maintenanceCommands.licenses.cpanel,
+    icon: Shield,
+    category: 'license'
+  },
+  {
+    id: 'softaculous-license',
+    name: 'Actualizar Licencia Softaculous',
+    description: 'Actualiza la licencia del instalador automático Softaculous',
+    command: config.maintenanceCommands.licenses.softaculous,
+    icon: Shield,
+    category: 'license'
+  },
+  {
+    id: 'sitepad-license',
+    name: 'Actualizar Licencia SitePad',
+    description: 'Actualiza la licencia del constructor de sitios SitePad',
+    command: config.maintenanceCommands.licenses.sitepad,
+    icon: Shield,
+    category: 'license'
+  },
+  {
+    id: 'whmreseller-license',
+    name: 'Actualizar Licencia WHMReseller',
+    description: 'Actualiza la licencia del panel de revendedores',
+    command: config.maintenanceCommands.licenses.whmreseller,
+    icon: Shield,
+    category: 'license'
+  },
+  {
+    id: 'whmxtra-license',
+    name: 'Actualizar Licencia WHMxtra',
+    description: 'Actualiza la licencia de herramientas WHMxtra',
+    command: config.maintenanceCommands.licenses.whmxtra,
+    icon: Shield,
+    category: 'license'
+  },
+  {
+    id: 'jetbackup-license',
+    name: 'Actualizar Licencia JetBackup',
+    description: 'Actualiza la licencia del sistema de respaldos JetBackup',
+    command: config.maintenanceCommands.licenses.jetbackup,
     icon: Shield,
     category: 'license'
   },
   {
     id: 'cloudlinux-license',
     name: 'Actualizar Licencia CloudLinux',
-    description: 'Renueva la licencia de CloudLinux OS',
-    command: '/usr/bin/cldetect --update-license',
+    description: 'Actualiza la licencia de CloudLinux OS',
+    command: config.maintenanceCommands.licenses.cloudlinux,
     icon: Shield,
     category: 'license'
   },
   {
+    id: 'litespeedx-license',
+    name: 'Actualizar Licencia LiteSpeed Enterprise',
+    description: 'Actualiza la licencia del servidor web LiteSpeed',
+    command: config.maintenanceCommands.licenses.litespeedx,
+    icon: Shield,
+    category: 'license'
+  },
+  {
+    id: 'kernelcare-license',
+    name: 'Actualizar Licencia KernelCare',
+    description: 'Actualiza la licencia de parches de kernel KernelCare',
+    command: config.maintenanceCommands.licenses.kernelcare,
+    icon: Shield,
+    category: 'license'
+  },
+  {
+    id: 'osm-license',
+    name: 'Actualizar Licencia OSM',
+    description: 'Actualiza la licencia del optimizador de servidor OSM',
+    command: config.maintenanceCommands.licenses.osm,
+    icon: Shield,
+    category: 'license'
+  },
+  {
+    id: 'cxs-license',
+    name: 'Actualizar Licencia CXS',
+    description: 'Actualiza la licencia del escáner de seguridad CXS',
+    command: config.maintenanceCommands.licenses.cxs,
+    icon: Shield,
+    category: 'license'
+  },
+  {
+    id: 'backuply-license',
+    name: 'Actualizar Licencia Backuply',
+    description: 'Actualiza la licencia del sistema de respaldos Backuply',
+    command: config.maintenanceCommands.licenses.backuply,
+    icon: Shield,
+    category: 'license'
+  },
+  {
+    id: 'imunify360-license',
+    name: 'Actualizar Licencia Imunify360',
+    description: 'Actualiza la licencia del firewall Imunify360',
+    command: config.maintenanceCommands.licenses.imunify360,
+    icon: Shield,
+    category: 'license'
+  },
+  
+  // Tareas de mantenimiento
+  {
     id: 'clean-temp',
     name: 'Limpiar Temporales',
-    description: 'Elimina archivos temporales y cache del sistema',
-    command: 'find /tmp -type f -mtime +7 -delete && find /var/tmp -type f -mtime +7 -delete',
+    description: 'Elimina archivos temporales del sistema',
+    command: config.maintenanceCommands.maintenance.cleanTemp,
     icon: Trash2,
     category: 'maintenance'
   },
   {
+    id: 'update-system',
+    name: 'Actualizar Sistema',
+    description: 'Actualiza paquetes del sistema operativo',
+    command: config.maintenanceCommands.maintenance.updateSystem,
+    icon: RefreshCw,
+    category: 'maintenance'
+  },
+  
+  // Servicios
+  {
+    id: 'restart-apache',
+    name: 'Reiniciar Apache',
+    description: 'Reinicia el servidor web Apache',
+    command: config.maintenanceCommands.maintenance.restartApache,
+    icon: Server,
+    category: 'service'
+  },
+  {
+    id: 'restart-nginx',
+    name: 'Reiniciar Nginx',
+    description: 'Reinicia el servidor web Nginx',
+    command: config.maintenanceCommands.maintenance.restartNginx,
+    icon: Server,
+    category: 'service'
+  },
+  {
     id: 'restart-web',
     name: 'Reiniciar Servicios Web',
-    description: 'Reinicia Apache/Nginx y servicios relacionados',
-    command: 'systemctl restart apache2 nginx && systemctl restart php8.1-fpm',
+    description: 'Reinicia Apache, Nginx y PHP-FPM',
+    command: config.maintenanceCommands.maintenance.restartWeb,
     icon: RefreshCw,
+    category: 'service'
+  },
+  {
+    id: 'check-services',
+    name: 'Verificar Servicios',
+    description: 'Muestra el estado de servicios críticos',
+    command: config.maintenanceCommands.maintenance.checkServices,
+    icon: Server,
     category: 'service'
   }
 ]
@@ -174,16 +299,24 @@ export default function ServerMaintenance() {
       // Simular respuesta del webhook
       await new Promise(resolve => setTimeout(resolve, 2000))
       
-      const mockOutput = `Ejecutando: ${task.command}
-Resultado: ✓ Comando ejecutado exitosamente
-Tiempo de ejecución: 1.23s
-Servidores procesados: 3/3
-Estado: Completado sin errores
+      const mockOutput = `$ ${task.command}
 
-Detalles:
-- Servidor 1: OK
-- Servidor 2: OK  
-- Servidor 3: OK`
+⬇️  Descargando script desde mirror.qhosting.net...
+✓ Script descargado exitosamente
+⬇️  Instalando/Actualizando licencia...
+✓ Proceso completado sin errores
+
+📊 Resultados:
+⏱️  Tiempo de ejecución: 2.47s
+🖥️  Servidores procesados: 3/3
+✅ Estado: Todos los servidores actualizados
+
+📝 Detalles por servidor:
+• aurum.qhosting.net: ✓ Actualizado correctamente
+• backup.qhosting.net: ✓ Actualizado correctamente  
+• main.qhosting.net: ✓ Actualizado correctamente
+
+🔄 Próxima verificación automática en 24 horas`
       
       setTerminalOutputs(prev => prev.map(output => 
         output.id === newOutput.id 
@@ -225,7 +358,7 @@ Código: 500 - Internal Server Error`
             Server Maintenance
           </h1>
           <p className="text-gray-400 mt-1">
-            Panel de control para tareas administrativas y mantenimiento
+            Panel de control para licencias QHosting, mantenimiento y gestión de servicios
           </p>
         </div>
         <div className="flex space-x-3">
@@ -246,9 +379,9 @@ Código: 500 - Internal Server Error`
         <div>
           <h2 className="text-xl font-semibold text-cyber-cyan mb-4 flex items-center space-x-2">
             <Shield className="w-5 h-5" />
-            <span>Licencias</span>
+            <span>Licencias QHosting</span>
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {tasksByCategory.license.map((task) => (
               <MaintenanceButton
                 key={task.id}
@@ -263,9 +396,9 @@ Código: 500 - Internal Server Error`
         <div>
           <h2 className="text-xl font-semibold text-cyber-cyan mb-4 flex items-center space-x-2">
             <Trash2 className="w-5 h-5" />
-            <span>Mantenimiento</span>
+            <span>Mantenimiento del Sistema</span>
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {tasksByCategory.maintenance.map((task) => (
               <MaintenanceButton
                 key={task.id}
@@ -280,9 +413,9 @@ Código: 500 - Internal Server Error`
         <div>
           <h2 className="text-xl font-semibold text-cyber-cyan mb-4 flex items-center space-x-2">
             <Server className="w-5 h-5" />
-            <span>Servicios</span>
+            <span>Gestión de Servicios</span>
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {tasksByCategory.service.map((task) => (
               <MaintenanceButton
                 key={task.id}

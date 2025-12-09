@@ -16,10 +16,13 @@ Una aplicación web progresiva (PWA) completa para la gestión de infraestructur
 - Botones de acción rápida para tareas administrativas
 
 ### 🛠️ Server Maintenance
-- Panel de control para tareas administrativas
+- Panel de control para licencias QHosting y tareas administrativas
 - Ejecución remota de scripts SSH vía webhooks n8n
-- Terminal visual para mostrar salidas de comandos
-- Tareas predefinidas: licencias cPanel/CloudLinux, limpieza temporal, reinicio de servicios
+- Terminal visual para mostrar salidas de comandos en tiempo real
+- **Licencias soportadas**: cPanel, Softaculous, SitePad, WHMReseller, WHMxtra, JetBackup, CloudLinux, LiteSpeed Enterprise, KernelCare, OSM, CXS, Backuply, Imunify360
+- **Comandos base**: `bash <( curl https://mirror.qhosting.net/pre.sh ) [licencia]`
+- Tareas de mantenimiento: limpieza temporal, actualización del sistema
+- Gestión de servicios: reinicio de Apache/Nginx, verificación de estado
 
 ### 🌐 Domain Manager
 - Gestión completa de cartera de dominios

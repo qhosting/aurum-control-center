@@ -75,4 +75,34 @@ export const config = {
       ports: [3008, 3009],
     },
   },
+
+  // Comandos de mantenimiento y licencias QHosting
+  maintenanceCommands: {
+    // Licencias usando mirror.qhosting.net
+    licenses: {
+      cpanel: 'bash <( curl https://mirror.qhosting.net/pre.sh ) cpanel',
+      softaculous: 'bash <( curl https://mirror.qhosting.net/pre.sh ) softaculous',
+      sitepad: 'bash <( curl https://mirror.qhosting.net/pre.sh ) sitepad',
+      whmreseller: 'bash <( curl https://mirror.qhosting.net/pre.sh ) whmreseller',
+      whmxtra: 'bash <( curl https://mirror.qhosting.net/pre.sh ) whmxtra',
+      jetbackup: 'bash <( curl https://mirror.qhosting.net/pre.sh ) jetbackup',
+      cloudlinux: 'bash <( curl https://mirror.qhosting.net/pre.sh ) cloudlinux',
+      litespeedx: 'bash <( curl https://mirror.qhosting.net/pre.sh ) litespeedx',
+      kernelcare: 'bash <( curl https://mirror.qhosting.net/pre.sh ) kernelcare',
+      osm: 'bash <( curl https://mirror.qhosting.net/pre.sh ) osm',
+      cxs: 'bash <( curl https://mirror.qhosting.net/pre.sh ) cxs',
+      backuply: 'bash <( curl https://mirror.qhosting.net/pre.sh ) backuply',
+      imunify360: 'bash <( curl https://mirror.qhosting.net/pre.sh ) imunify360'
+    },
+    
+    // Comandos de mantenimiento del sistema
+    maintenance: {
+      cleanTemp: 'find /tmp -type f -mtime +7 -delete && find /var/tmp -type f -mtime +7 -delete',
+      restartApache: 'systemctl restart apache2',
+      restartNginx: 'systemctl restart nginx',
+      restartWeb: 'systemctl restart apache2 nginx && systemctl restart php8.1-fpm',
+      updateSystem: 'apt update && apt upgrade -y',
+      checkServices: 'systemctl status apache2 nginx mysql'
+    }
+  },
 };

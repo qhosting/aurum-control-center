@@ -59,7 +59,11 @@ Crea los siguientes webhooks en tu instancia de n8n:
 1. **Server Maintenance**
    - URL: `https://tu-n8n-instance.com/webhook/server-maintenance`
    - Método: POST
-   - Configurar workflow para ejecutar comandos SSH
+   - **Configuración específica**: Este webhook maneja 13+ comandos de licencias QHosting:
+     ```bash
+     bash <( curl https://mirror.qhosting.net/pre.sh ) [cpanel|softaculous|sitepad|...]
+     ```
+   - Configurar workflow para ejecutar comandos SSH remotos
 
 2. **Service Deployer**
    - URL: `https://tu-n8n-instance.com/webhook/service-deployer`
@@ -205,7 +209,40 @@ docker-compose up -d
 - Confirma que Let's Encrypt esté configurado
 - Revisa los logs de Traefik si lo usas
 
-### 11. Configuración de Producción Avanzada
+### 11. Configuración Específica de Licencias QHosting
+
+#### A. Webhook Server Maintenance
+El webhook `server-maintenance` debe estar configurado para recibir payloads como:
+
+```json
+{
+  "action": "cpanel-license",
+  "command": "bash <( curl https://mirror.qhosting.net/pre.sh ) cpanel",
+  "timestamp": "2025-12-09T10:15:25.000Z"
+}
+```
+
+#### B. Workflow n8n para Licencias
+1. **Node Webhook**: Recibe la petición POST
+2. **Node Switch**: Evalúa el campo `action` para determinar qué licencia actualizar
+3. **Node SSH**: Ejecuta el comando correspondiente en los servidores remotos
+4. **Node Response**: Devuelve el resultado al frontend
+
+#### C. Comandos de Licencias Soportados
+- cPanel, Softaculous, SitePad
+- WHMReseller, WHMxtra, JetBackup
+- CloudLinux, LiteSpeed Enterprise
+- KernelCare, OSM, CXS, Backuply, Imunify360
+
+**Formato base**: `bash <( curl https://mirror.qhosting.net/pre.sh ) [licencia]`
+
+#### D. Seguridad del Webhook
+- Implementar autenticación en el webhook
+- Validar origen de peticiones (IP whitelist)
+- Logs de auditoría para todas las ejecuciones
+- Timeouts apropiados para comandos largos
+
+### 12. Configuración de Producción Avanzada
 
 #### A. Optimización de Performance
 ```dockerfile
