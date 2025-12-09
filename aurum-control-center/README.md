@@ -16,11 +16,13 @@ Una aplicación web progresiva (PWA) completa para la gestión de infraestructur
 - Botones de acción rápida para tareas administrativas
 
 ### 🛠️ Server Maintenance
-- Panel de control para licencias QHosting y tareas administrativas
+- Panel de control dinámico para licencias y tareas administrativas
 - Ejecución remota de scripts SSH vía webhooks n8n
 - Terminal visual para mostrar salidas de comandos en tiempo real
-- **Licencias soportadas**: cPanel, Softaculous, SitePad, WHMReseller, WHMxtra, JetBackup, CloudLinux, LiteSpeed Enterprise, KernelCare, OSM, CXS, Backuply, Imunify360
-- **Comandos base**: `bash <( curl https://mirror.qhosting.net/pre.sh ) [licencia]`
+- **Sistema 100% dinámico**: Agrega nuevas licencias fácilmente editando `src/config/config.js`
+- **13+ licencias QHosting soportadas**: cPanel, Softaculous, SitePad, WHMReseller, WHMxtra, JetBackup, CloudLinux, LiteSpeed Enterprise, KernelCare, OSM, CXS, Backuply, Imunify360
+- **Categorización automática**: Control Panel, Installer, Builder, Security, etc.
+- **Soporte multi-proveedor**: QHosting, cPanel Inc., o cualquier proveedor personalizado
 - Tareas de mantenimiento: limpieza temporal, actualización del sistema
 - Gestión de servicios: reinicio de Apache/Nginx, verificación de estado
 
@@ -188,6 +190,38 @@ src/
 - Logs estructurados
 - Métricas de rendimiento
 - Alertas de errores
+
+## 🔧 Extensibilidad y Personalización
+
+### Agregar Nuevas Licencias (Súper Fácil)
+El sistema está diseñado para ser **100% dinámico**. Para agregar una nueva licencia:
+
+1. **Edita** `src/config/config.js`
+2. **Agrega** un nuevo objeto al array `licenses`:
+```javascript
+{
+  id: 'mi-nueva-licencia',
+  name: 'Mi Nueva Licencia',
+  description: 'Descripción de la licencia',
+  command: 'bash <( curl https://mirror.qhosting.net/pre.sh ) mi-nueva-licencia',
+  category: 'control-panel',
+  enabled: true,
+  vendor: 'QHosting'
+}
+```
+3. **Recarga** la aplicación (F5)
+
+📖 **Guía completa**: Ver [`ADD_LICENSES_GUIDE.md`](./ADD_LICENSES_GUIDE.md)
+
+### Soporte Multi-Proveedor
+- **QHosting**: Comandos con `mirror.qhosting.net`
+- **cPanel Inc.**: Scripts oficiales de cPanel
+- **Personalizado**: Cualquier script o comando bash
+
+### Categorías Dinámicas
+- Sistema de categorización automático
+- Colores e iconos por categoría
+- Organización visual mejorada
 
 ## 🤝 Contribución
 
