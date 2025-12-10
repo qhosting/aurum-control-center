@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { 
-  Terminal, 
+  Terminal as TerminalIcon, 
   RefreshCw, 
   Shield, 
   Trash2, 
@@ -31,8 +31,8 @@ interface MaintenanceTask {
   enabled?: boolean
 }
 
-// Componente Terminal para mostrar la salida
-function Terminal({ outputs }: { outputs: TerminalOutput[] }) {
+// Componente TerminalOutput para mostrar la salida
+function TerminalOutput({ outputs }: { outputs: TerminalOutput[] }) {
   const [copied, setCopied] = useState<string | null>(null)
 
   const copyToClipboard = async (text: string, id: string) => {
@@ -338,7 +338,7 @@ Código: 500 - Internal Server Error`
             className="flex items-center space-x-2 px-4 py-2 bg-cyber-gray-700 hover:bg-cyber-gray-600 text-white rounded-lg transition-colors"
             disabled={isExecuting}
           >
-            <Terminal className="w-4 h-4" />
+            <TerminalIcon className="w-4 h-4" />
             <span>Limpiar Terminal</span>
           </button>
         </div>
@@ -402,7 +402,7 @@ Código: 500 - Internal Server Error`
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold text-cyber-cyan flex items-center space-x-2">
-            <Terminal className="w-5 h-5" />
+            <TerminalIcon className="w-5 h-5" />
             <span>Terminal Output</span>
           </h2>
           {isExecuting && (
@@ -412,7 +412,7 @@ Código: 500 - Internal Server Error`
             </div>
           )}
         </div>
-        <Terminal outputs={terminalOutputs} />
+        <TerminalOutput outputs={terminalOutputs} />
       </div>
     </div>
   )
