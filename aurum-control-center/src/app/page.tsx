@@ -8,7 +8,7 @@ interface ServerStatus {
   id: string
   name: string
   ip: string
-  status: 'online' | 'offline'
+  status: 'online' | 'offline' | 'warning'
   cpu: number
   ram: number
   disk: number

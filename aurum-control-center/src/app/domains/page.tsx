@@ -29,7 +29,7 @@ interface Domain {
 interface ModalProps {
   isOpen: boolean
   onClose: () => void
-  children: React.ReactNode
+  children?: React.ReactNode
 }
 
 // Componente Modal reutilizable
@@ -351,7 +351,7 @@ function DomainCard({ domain }: { domain: Domain }) {
 import { Clock } from 'lucide-react'
 
 export default function DomainManager() {
-  const [domains, setDomains] = useState<Domain[]>(config.domains)
+  const [domains, setDomains] = useState<Domain[]>([...config.domains] as Domain[])
   const [selectedDomain, setSelectedDomain] = useState<Domain | null>(null)
   const [nameserverModal, setNameserverModal] = useState(false)
   const [eppModal, setEppModal] = useState(false)

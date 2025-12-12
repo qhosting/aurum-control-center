@@ -1,5 +1,72 @@
+// Tipos para la configuración
+export interface WebhooksConfig {
+  serverMaintenance: string
+  serviceDeployer: string
+  domainManager: string
+  dnsAudit: string
+  n8nHealth: string
+}
+
+export interface ServerConfig {
+  id: string
+  name: string
+  ip: string
+  status: 'online' | 'offline' | 'warning'
+  cpu: number
+  ram: number
+  disk: number
+}
+
+export interface DomainConfig {
+  id: number
+  domain: string
+  client: string
+  expirationDate: string
+  status: 'active' | 'expired' | 'pending'
+  nameservers: string[]
+}
+
+export interface ServiceConfig {
+  name: string
+  ports: number[]
+}
+
+export interface LicenseConfig {
+  id: string
+  name: string
+  description: string
+  command: string
+  category: 'control-panel' | 'installer' | 'builder' | 'reseller' | 'tools' | 'backup' | 'os' | 'webserver' | 'security' | 'optimizer'
+  enabled: boolean
+  vendor: string
+}
+
+export interface MaintenanceCommandsConfig {
+  qhosting: {
+    baseUrl: string
+    baseCommand: string
+  }
+  licenses: LicenseConfig[]
+  maintenance: {
+    cleanTemp: string
+    restartApache: string
+    restartNginx: string
+    restartWeb: string
+    updateSystem: string
+    checkServices: string
+  }
+}
+
+export interface AppConfig {
+  webhooks: WebhooksConfig
+  servers: ServerConfig[]
+  domains: DomainConfig[]
+  services: { [key: string]: ServiceConfig }
+  maintenanceCommands: MaintenanceCommandsConfig
+}
+
 // Configuración de URLs de webhooks n8n
-export const config = {
+export const config: AppConfig = {
   // URLs base de webhooks n8n (cambiar por las URLs reales)
   webhooks: {
     serverMaintenance: 'https://tu-n8n-instance.com/webhook/server-maintenance',

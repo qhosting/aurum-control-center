@@ -258,7 +258,10 @@ export default function ServerHealth() {
       
       // Simular datos de servidores con métricas más detalladas
       const mockServers: ServerMetrics[] = config.servers.map(server => ({
-        ...server,
+        id: server.id,
+        name: server.name,
+        ip: server.ip,
+        status: server.status,
         cpu: Math.floor(Math.random() * 100),
         ram: Math.floor(Math.random() * 100),
         disk: Math.floor(Math.random() * 100),

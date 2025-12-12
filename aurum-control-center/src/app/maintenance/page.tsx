@@ -2,13 +2,14 @@
 
 import { useState } from 'react'
 import { 
-  Terminal, 
+  Terminal as TerminalIcon, 
   RefreshCw, 
   Shield, 
   Trash2, 
   Server, 
   Copy,
-  CheckCircle
+  CheckCircle,
+  LucideIcon
 } from 'lucide-react'
 import { config } from '@/config/config'
 
@@ -91,7 +92,7 @@ function MaintenanceButton({ task, onExecute }: {
 }) {
   // Obtener color según categoría para licencias
   const getCategoryColor = (category: string) => {
-    const colors = {
+    const colors: { [key: string]: string } = {
       'control-panel': 'bg-blue-500/10 border-blue-500/20',
       'installer': 'bg-green-500/10 border-green-500/20',
       'builder': 'bg-purple-500/10 border-purple-500/20',
@@ -139,8 +140,8 @@ function MaintenanceButton({ task, onExecute }: {
 }
 
 // Función para obtener el icono según la categoría
-const getIconForCategory = (category: string) => {
-  const iconMap = {
+const getIconForCategory = (category: string): LucideIcon => {
+  const iconMap: { [key: string]: LucideIcon } = {
     'control-panel': Shield,
     'installer': RefreshCw,
     'builder': Server,
@@ -338,7 +339,7 @@ Código: 500 - Internal Server Error`
             className="flex items-center space-x-2 px-4 py-2 bg-cyber-gray-700 hover:bg-cyber-gray-600 text-white rounded-lg transition-colors"
             disabled={isExecuting}
           >
-            <Terminal className="w-4 h-4" />
+            <TerminalIcon className="w-4 h-4" />
             <span>Limpiar Terminal</span>
           </button>
         </div>
@@ -402,7 +403,7 @@ Código: 500 - Internal Server Error`
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold text-cyber-cyan flex items-center space-x-2">
-            <Terminal className="w-5 h-5" />
+            <TerminalIcon className="w-5 h-5" />
             <span>Terminal Output</span>
           </h2>
           {isExecuting && (

@@ -12,6 +12,7 @@ import {
   CloudOff,
   Loader2
 } from 'lucide-react'
+import { config } from '@/config/config'
 
 interface DNSRecord {
   type: string

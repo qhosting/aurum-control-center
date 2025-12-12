@@ -14,7 +14,7 @@ import {
   MessageSquare,
   Phone
 } from 'lucide-react'
-import { config } from '@/config/config'
+import { config as appConfig } from '@/config/config'
 
 interface ServiceType {
   id: string
@@ -47,7 +47,7 @@ const serviceTypes: ServiceType[] = [
     name: 'WAHA (WhatsApp Web API)',
     description: 'API de WhatsApp Web para automatización de mensajes',
     icon: MessageSquare,
-    ports: config.services.waha.ports,
+    ports: appConfig.services.waha.ports,
     category: 'communication',
     features: [
       'Envío y recepción de mensajes',
@@ -61,7 +61,7 @@ const serviceTypes: ServiceType[] = [
     name: 'Chatwoot',
     description: 'Plataforma de atención al cliente en tiempo real',
     icon: MessageSquare,
-    ports: config.services.chatwoot.ports,
+    ports: appConfig.services.chatwoot.ports,
     category: 'support',
     features: [
       'Chat en vivo',
@@ -75,7 +75,7 @@ const serviceTypes: ServiceType[] = [
     name: 'Asterisk PBX',
     description: 'Sistema telefónico PBX basado en Asterisk',
     icon: Phone,
-    ports: config.services.pbx.ports,
+    ports: appConfig.services.pbx.ports,
     category: 'infrastructure',
     features: [
       'Llamadas VoIP',
@@ -333,7 +333,7 @@ export default function ServiceDeployer() {
     
     try {
       // Simular llamada al webhook de n8n
-      const response = await fetch(config.webhooks.serviceDeployer, {
+      const response = await fetch(appConfig.webhooks.serviceDeployer, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
