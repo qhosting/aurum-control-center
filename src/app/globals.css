@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222.2 84% 4.9%; /* slate-950 */
+    --foreground: 210 40% 98%; /* slate-50 */
+
+    --card: 217.2 32.6% 17.5%; /* slate-800 */
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 51 100% 50%; /* gold-500 #FFD700 */
+    --primary-foreground: 222.2 84% 4.9%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 215 27.9% 16.9%; /* slate-700 */
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 51 91.7% 95.3%; /* gold-50 */
+    --accent-foreground: 222.2 84% 4.9%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
+    --ring: 51 100% 50%;
+
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+}
+
+/* Cyberpunk Gold Custom Styles */
+@layer components {
+  .cyber-card {
+    @apply bg-cyber-card border border-cyber-border rounded-lg shadow-lg;
+  }
+
+  .cyber-button {
+    @apply bg-gold-500 text-cyber-dark font-bold py-2 px-4 rounded hover:bg-gold-400 transition-colors;
+  }
+
+  .cyber-input {
+    @apply bg-cyber-card border border-cyber-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gold-500;
+  }
+
+  .cyber-glow {
+    @apply shadow-[0_0_20px_rgba(255,215,0,0.3)] hover:shadow-[0_0_40px_rgba(255,215,0,0.6)] transition-shadow;
+  }
+
+  .cyber-grid-bg {
+    @apply bg-cyber-grid;
+  }
+
+  /* Scrollbar styling */
+  .cyber-scrollbar::-webkit-scrollbar {
+    @apply w-2;
+  }
+
+  .cyber-scrollbar::-webkit-scrollbar-track {
+    @apply bg-cyber-dark;
+  }
+
+  .cyber-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-gold-500 rounded-full;
+  }
+
+  .cyber-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-gold-400;
+  }
+}
+
+/* Loading animation */
+@keyframes pulse-gold {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse-gold {
+  animation: pulse-gold 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Glass morphism effect */
+.glass {
+  @apply bg-opacity-10 backdrop-blur-lg border border-opacity-20;
+}

@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: qhosting_aurum-control-center-db
+    hostname: qhosting_aurum-control-center-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 202284abf4656b289b41
+      POSTGRES_DB: aurum-control-center-db
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - aurum-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # PgBouncer - Connection Pooler
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    container_name: aurum-pgbouncer
+    environment:
+      DATABASE_URL: postgres://postgres:202284abf4656b289b41@qhosting_aurum-control-center-db:5432/aurum-control-center-db?sslmode=disable
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 1000
+      DEFAULT_POOL_SIZE: 25
+      MIN_POOL_SIZE: 10
+      RESERVE_POOL_SIZE: 5
+      RESERVE_POOL_TIMEOUT: 3
+      SERVER_IDLE_TIMEOUT: 600
+      MAX_DB_CONNECTIONS: 100
+      MAX_USER_CONNECTIONS: 100
+    ports:
+      - "6432:5432"
+    networks:
+      - aurum-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: qhosting_aurum-control-center-redis
+    hostname: qhosting_aurum-control-center-redis
+    command: redis-server --requirepass aurum-control-center-redis --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - aurum-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  aurum-network:
+    driver: bridge
+    name: aurum-network

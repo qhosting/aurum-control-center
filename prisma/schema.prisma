@@ -1,0 +1,503 @@
+// ================================
+// AURUM CONTROL CENTER - PRISMA SCHEMA
+// ================================
+// Database: PostgreSQL 15+
+// ORM: Prisma 5+
+// Date: 2025-12-12
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
+  binaryTargets   = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ================================
+// USERS & AUTHENTICATION
+// ================================
+
+enum UserRole {
+  CEO       // Acceso total a todos los satélites
+  MANAGER   // Acceso a satélites específicos
+  EMPLOYEE  // Acceso limitado a tareas asignadas
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      UserRole @default(EMPLOYEE)
+  status    UserStatus @default(ACTIVE)
+  
+  // Avatar y perfil
+  avatar    String?
+  phone     String?
+  position  String?
+  
+  // Satélites permitidos (solo para MANAGER)
+  allowedSatellites String[] @default([])
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastLogin DateTime?
+  
+  // Relaciones
+  assignedTasks    Task[]           @relation("TaskAssignee")
+  createdTasks     Task[]           @relation("TaskCreator")
+  tickets          InternalTicket[] @relation("TicketAssignee")
+  createdTickets   InternalTicket[] @relation("TicketCreator")
+  financeLogs      FinanceLog[]
+  
+  @@index([email])
+  @@index([role, status])
+  @@map("users")
+}
+
+// ================================
+// SATELLITES (11 empresas del holding)
+// ================================
+
+enum SatelliteStatus {
+  ACTIVE
+  INACTIVE
+  MAINTENANCE
+}
+
+enum SatelliteCategory {
+  INFRASTRUCTURE  // QHOSTING
+  MARKETING       // NEURONADS
+  BEAUTY          // SHULA STUDIO
+  MANUFACTURING   // LUMINAFLEX
+  FINTECH         // ESCALAFIN
+  SAAS            // CUENTY, WHATSCLOUD, VERTEXERP, CITA PLANNER
+  HARDWARE        // CLOUDMX
+  TRADING         // AURUM INVEST
+  CONSULTING      // VERTEXERP
+}
+
+model Satellite {
+  id          String            @id @default(cuid())
+  code        String            @unique // QHOSTING, NEURONADS, etc.
+  name        String            // Nombre completo
+  category    SatelliteCategory
+  status      SatelliteStatus   @default(ACTIVE)
+  
+  // Información de contacto
+  inboxNumber Int               // Número de inbox (3, 6, 7, 9)
+  email       String?
+  phone       String?
+  website     String?
+  
+  // Descripción y notas
+  description String?
+  notes       String?
+  
+  // Logo y branding
+  logo        String?
+  primaryColor String?
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relaciones
+  config      SatelliteConfig?
+  tasks       Task[]
+  tickets     InternalTicket[]
+  financeLogs FinanceLog[]
+  
+  @@index([code])
+  @@index([category, status])
+  @@index([status])
+  @@map("satellites")
+}
+
+// ================================
+// SATELLITE CONFIGURATION
+// ================================
+
+model SatelliteConfig {
+  id          String   @id @default(cuid())
+  satelliteId String   @unique
+  
+  // APIs y credenciales
+  apiUrl      String?
+  apiKey      String?
+  webhookUrl  String?
+  
+  // Configuración de servicios
+  hasDatabase Boolean  @default(false)
+  databaseUrl String?
+  
+  hasRedis    Boolean  @default(false)
+  redisUrl    String?
+  
+  // Configuración de notificaciones
+  slackWebhook   String?
+  emailAlerts    String[] @default([])
+  
+  // Configuración personalizada (JSON)
+  customSettings Json?
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relación
+  satellite   Satellite @relation(fields: [satelliteId], references: [id], onDelete: Cascade)
+  
+  @@index([satelliteId])
+  @@map("satellite_configs")
+}
+
+// ================================
+// TASKS (Tareas y proyectos)
+// ================================
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  REVIEW
+  DONE
+  CANCELLED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model Task {
+  id          String       @id @default(cuid())
+  title       String
+  description String?
+  
+  // Status y prioridad
+  status      TaskStatus   @default(TODO)
+  priority    TaskPriority @default(MEDIUM)
+  
+  // Satélite asociado
+  satelliteId String
+  satellite   Satellite    @relation(fields: [satelliteId], references: [id], onDelete: Cascade)
+  
+  // Asignación
+  assigneeId  String?
+  assignee    User?        @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  
+  creatorId   String
+  creator     User         @relation("TaskCreator", fields: [creatorId], references: [id])
+  
+  // Fechas
+  dueDate     DateTime?
+  startDate   DateTime?
+  completedAt DateTime?
+  
+  // Estimación y tiempo
+  estimatedHours Float?
+  actualHours    Float?
+  
+  // Tags y categorías
+  tags        String[]     @default([])
+  
+  // Attachments
+  attachments String[]     @default([])
+  
+  // Timestamps
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  
+  @@index([satelliteId, status, priority])
+  @@index([assigneeId, status])
+  @@index([status, priority])
+  @@index([dueDate])
+  @@map("tasks")
+}
+
+// ================================
+// INTERNAL TICKETS (Soporte interno)
+// ================================
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum TicketType {
+  BUG
+  FEATURE
+  SUPPORT
+  QUESTION
+  IMPROVEMENT
+}
+
+model InternalTicket {
+  id          String         @id @default(cuid())
+  title       String
+  description String
+  
+  // Tipo y prioridad
+  type        TicketType
+  priority    TicketPriority @default(MEDIUM)
+  status      TicketStatus   @default(OPEN)
+  
+  // Satélite afectado
+  satelliteId String
+  satellite   Satellite      @relation(fields: [satelliteId], references: [id], onDelete: Cascade)
+  
+  // Asignación
+  assigneeId  String?
+  assignee    User?          @relation("TicketAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  
+  creatorId   String
+  creator     User           @relation("TicketCreator", fields: [creatorId], references: [id])
+  
+  // Resolución
+  resolution  String?
+  resolvedAt  DateTime?
+  closedAt    DateTime?
+  
+  // Attachments y comentarios
+  attachments String[]       @default([])
+  comments    Json[]         @default([])
+  
+  // Timestamps
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  
+  @@index([satelliteId, status])
+  @@index([assigneeId, status])
+  @@index([status, priority])
+  @@index([type, status])
+  @@map("internal_tickets")
+}
+
+// ================================
+// FINANCE LOGS (Registro financiero)
+// ================================
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+  TRANSFER
+  INVESTMENT
+}
+
+enum TransactionCategory {
+  SALARY
+  INFRASTRUCTURE
+  MARKETING
+  DEVELOPMENT
+  OPERATIONS
+  CONSULTING
+  SALES
+  SUBSCRIPTION
+  LICENSE
+  OTHER
+}
+
+model FinanceLog {
+  id          String              @id @default(cuid())
+  
+  // Tipo y categoría
+  type        TransactionType
+  category    TransactionCategory
+  
+  // Monto y moneda
+  amount      Float
+  currency    String              @default("USD")
+  
+  // Descripción
+  description String
+  notes       String?
+  
+  // Satélite asociado
+  satelliteId String
+  satellite   Satellite           @relation(fields: [satelliteId], references: [id], onDelete: Cascade)
+  
+  // Usuario que registró
+  userId      String
+  user        User                @relation(fields: [userId], references: [id])
+  
+  // Fecha de transacción
+  transactionDate DateTime        @default(now())
+  
+  // Adjuntos (facturas, recibos)
+  attachments String[]            @default([])
+  
+  // Metadata adicional
+  metadata    Json?
+  
+  // Timestamps
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  
+  @@index([satelliteId, transactionDate])
+  @@index([type, category])
+  @@index([transactionDate])
+  @@map("finance_logs")
+}
+
+// ================================
+// SYSTEM CONFIGURATION
+// ================================
+
+model SystemConfig {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  
+  // Metadatos
+  description String?
+  isPublic    Boolean  @default(false)
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([key])
+  @@map("system_configs")
+}
+
+// ================================
+// PRIVACY LIST (Lista de privacidad para satélites)
+// ================================
+
+model PrivacyList {
+  id          String   @id @default(cuid())
+  name        String
+  email       String
+  phone       String?
+  
+  // Razón de privacidad
+  reason      String?
+  
+  // Satélites bloqueados
+  blockedSatellites String[] @default([])
+  
+  // Metadata
+  metadata    Json?
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([email])
+  @@index([phone])
+  @@map("privacy_lists")
+}
+
+// ================================
+// AUDIT LOG (Registro de auditoría)
+// ================================
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  EXPORT
+  IMPORT
+}
+
+model AuditLog {
+  id          String      @id @default(cuid())
+  
+  // Acción realizada
+  action      AuditAction
+  entity      String      // Nombre del modelo afectado
+  entityId    String      // ID del registro afectado
+  
+  // Usuario que realizó la acción
+  userId      String
+  userName    String
+  userEmail   String
+  
+  // IP y metadatos
+  ipAddress   String?
+  userAgent   String?
+  
+  // Cambios realizados
+  changes     Json?       // Antes y después
+  
+  // Timestamp
+  createdAt   DateTime    @default(now())
+  
+  @@index([userId, createdAt])
+  @@index([entity, entityId])
+  @@index([action, createdAt])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// ================================
+// NOTIFICATIONS (Notificaciones del sistema)
+// ================================
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+}
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+  SLACK
+  SMS
+}
+
+model Notification {
+  id          String              @id @default(cuid())
+  
+  // Tipo y canal
+  type        NotificationType    @default(INFO)
+  channel     NotificationChannel @default(IN_APP)
+  
+  // Contenido
+  title       String
+  message     String
+  
+  // Destinatario
+  userId      String
+  
+  // Estado
+  read        Boolean             @default(false)
+  readAt      DateTime?
+  
+  // Metadata (link, action, etc.)
+  metadata    Json?
+  
+  // Timestamps
+  createdAt   DateTime            @default(now())
+  expiresAt   DateTime?
+  
+  @@index([userId, read, createdAt])
+  @@index([createdAt])
+  @@map("notifications")
+}
